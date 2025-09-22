@@ -23,10 +23,15 @@ export interface EstimateListItem {
 	moving_date_type: string
 	moving_date?: string
 	moving_period?: string
+	moving_year_month?: string
 	people_count: number
 	work_start_time_type: string
 	work_start_time?: string
 	other_luggage?: string
+	has_bid_right: boolean
+	has_bid: boolean
+	bid_amount_min: number | null
+	bid_amount_max: number | null
 	status: string
 	created_at: string
 	updated_at: string

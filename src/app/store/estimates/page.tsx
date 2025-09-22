@@ -7,7 +7,7 @@ import { getEstimatesList } from '@/lib/actions/estimates'
 import { EstimatesTable } from '@/components/EstimatesTable'
 import { Pagination } from '@/components/Pagination'
 import { EmptyState } from '@/components/EmptyState'
-import { EstimatesResponse } from '@/types/estimate'
+import { EstimatesListResponse } from '@/lib/actions/estimates'
 import { requireAuth } from '@/lib/auth'
 interface EstimatesPageProps {
 	searchParams: Promise<{
@@ -22,10 +22,11 @@ export default async function EstimatesPage({
 	const currentPage = parseInt(resolvedSearchParams.page || '1', 10)
 
 	try {
-		const estimatesData: EstimatesResponse = await getEstimatesList(
+		const estimatesData: EstimatesListResponse = await getEstimatesList(
 			currentPage,
 			20
 		)
+		console.log(estimatesData)
 
 		return (
 			<AuthLayout>

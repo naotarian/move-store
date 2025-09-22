@@ -1,7 +1,7 @@
-import { Estimate, StatusInfo, ESTIMATE_STATUS } from '@/types/estimate'
-import { EstimateDetailData } from '@/lib/actions/estimates'
+import { StatusInfo, ESTIMATE_STATUS } from '@/types/estimate'
+import { EstimateDetailData, EstimateListItem } from '@/lib/actions/estimates'
 
-export const formatMovingDate = (estimate: Estimate): string => {
+export const formatMovingDate = (estimate: EstimateListItem): string => {
 	if (estimate.moving_date_type === 'decided' && estimate.moving_date) {
 		// 日付をフォーマット（例：2025-09-16 → 2025年9月16日(火)）
 		const date = new Date(estimate.moving_date)
@@ -32,7 +32,7 @@ export const formatMovingDate = (estimate: Estimate): string => {
 }
 
 export const formatWorkStartTime = (
-	estimate: Estimate | EstimateDetailData
+	estimate: EstimateListItem | EstimateDetailData
 ): string => {
 	if (
 		estimate.work_start_time_type === 'specific' &&
