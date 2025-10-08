@@ -1,3 +1,11 @@
+import {
+	BuildingType,
+	Elevator,
+	PeopleCount,
+	MovingDateType,
+	WorkStartTimeType,
+	WorkStartTime,
+} from '../constants/estimate'
 export interface Estimate {
 	id: string
 	name: string
@@ -10,10 +18,10 @@ export interface Estimate {
 		city: string
 		street_address: string
 		building_details: string
-		building_type: string
+		building_type: BuildingType
 		room_layout: string
 		floor: string
-		elevator: string
+		elevator: Elevator
 		latitude: number
 		longitude: number
 		floor_plan: string
@@ -26,25 +34,29 @@ export interface Estimate {
 		city: string
 		street_address: string
 		building_details: string
-		building_type: string
+		building_type: BuildingType
 		room_layout: string
 		floor: string
-		elevator: string
+		elevator: Elevator
 		latitude: number
 		longitude: number
 		floor_plan: string
 		floor_number: string
 		has_elevator: boolean
 	}
-	moving_date_type: string
+	moving_date_type: MovingDateType
 	moving_date: string
-	moving_specific_date?: string
+	moving_specific_date: string | null
 	moving_year_month?: string
 	moving_period?: string
-	people_count: number
-	work_start_time_type: string
-	work_start_time?: string
+	people_count: PeopleCount
+	work_start_time_type: WorkStartTimeType
+	work_start_time: WorkStartTime
 	other_luggage?: string
+	has_bid_right: boolean
+	has_bid: boolean
+	bid_amount_min: number | null
+	bid_amount_max: number | null
 	luggage_items: Array<{
 		id: string
 		quantity: number
@@ -58,6 +70,14 @@ export interface Estimate {
 			}
 		}
 	}>
+	luggage_by_category?: Record<
+		string,
+		Array<{
+			name: string
+			quantity: number
+			sub_label?: string | null
+		}>
+	>
 	status: string
 	straight_distance_km: number | null
 	created_at: string

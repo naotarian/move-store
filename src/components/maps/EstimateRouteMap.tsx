@@ -242,7 +242,6 @@ export function EstimateRouteMap({
 			window.google.maps.event.removeListener(listener)
 		})
 	}
-	console.log(fromAddress, toAddress)
 	// 座標が存在しない、または無効な場合の表示
 	const fromLat = fromAddress.latitude
 		? parseFloat(String(fromAddress.latitude))

@@ -13,7 +13,6 @@ const NoBidRightMessage: React.FC<NoBidRightMessageProps> = ({
 	bidRightData,
 }) => {
 	const estimateInfo = bidRightData?.estimate_info
-	console.log('iiiiii')
 
 	// 日時をフォーマットする関数
 	const formatDateTime = (dateString?: string) => {
@@ -33,7 +32,6 @@ const NoBidRightMessage: React.FC<NoBidRightMessageProps> = ({
 	}
 
 	// 購入期限切れかどうかをチェック
-	console.log(estimateInfo?.is_purchase_deadline_expired)
 	const isPurchaseExpired = estimateInfo?.is_purchase_deadline_expired
 	const remainingMinutes = estimateInfo?.remaining_purchase_minutes
 	const remainingBidHours = estimateInfo?.remaining_bid_hours

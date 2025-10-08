@@ -7,6 +7,8 @@ import EstimateNotFound from '@/components/common/EstimateNotFound'
 import BidForm from '@/components/bid/BidForm'
 import BidPageHeader from '@/components/bid/BidPageHeader'
 import BidRanking from '@/components/common/BidRanking'
+import BidRankingList from '@/components/common/BidRankingList'
+import type { EstimateWithBidRanking } from '@/lib/actions/estimates'
 import {
 	getEstimateDetail,
 	checkBidRight,
@@ -38,7 +40,7 @@ export default async function BidPage({ params }: BidPageProps) {
 			getBidsByEstimate(id),
 		])
 
-	const estimate = estimateResponse.data
+	const estimate = estimateResponse.data as EstimateWithBidRanking | null
 	const bidRightData = bidRightDataResponse.data
 
 	if (!estimate) {
@@ -48,7 +50,7 @@ export default async function BidPage({ params }: BidPageProps) {
 			</AuthLayout>
 		)
 	}
-
+	console.log(estimate)
 	// 入札データを価格順でソート（最低価格の安い順）
 	const sortedBids = bids.sort((a, b) => a.min_price - b.min_price)
 
@@ -62,7 +64,12 @@ export default async function BidPage({ params }: BidPageProps) {
 					<div className='px-4 py-6 sm:px-0'>
 						<BidPageHeader estimateId={id} />
 
-						<div className='space-y-6'>
+						<div className='grid grid-cols-2 gap-6 items-start'>
+							{estimate &&
+								estimate.bid_ranking_list &&
+								estimate.bid_ranking_list.length > 0 && (
+									<BidRankingList estimate={estimate} />
+								)}
 							<BidForm
 								estimateId={id}
 								bidRightData={bidRightData}
@@ -70,7 +77,6 @@ export default async function BidPage({ params }: BidPageProps) {
 								successMessage={successMessage}
 								errorMessage={errorMessage}
 							/>
-							<BidRanking bids={sortedBids} />
 						</div>
 					</div>
 				</main>

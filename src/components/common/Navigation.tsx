@@ -35,12 +35,8 @@ const menuItems: MenuItem[] = [
 		href: '/store/customers',
 		children: [
 			{
-				title: '顧客一覧',
+				title: '営業権獲得顧客',
 				href: '/store/customers',
-			},
-			{
-				title: '新規顧客登録',
-				href: '/store/customers/create',
 			},
 		],
 	},

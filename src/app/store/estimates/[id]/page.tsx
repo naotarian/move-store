@@ -1,17 +1,26 @@
 import React from 'react'
-import { ArrowLeft } from 'lucide-react'
+import {
+	ArrowLeft,
+	CheckCircle,
+	ExternalLink,
+	Sparkles,
+	Trophy,
+	Medal,
+	Award,
+	TrendingUp,
+} from 'lucide-react'
 import AuthLayout from '@/components/AuthLayout'
 import SubHeader from '@/components/common/SubHeader'
 import Navigation from '@/components/common/Navigation'
 import Link from 'next/link'
 import { getEstimateDetail } from '@/lib/actions/estimates'
-import {
-	formatMovingDate,
-	formatWorkStartTime,
-	formatPeopleCount,
-} from '@/utils/estimateFormatters'
-import { GoogleMapsLoader } from '@/components/maps/GoogleMapsLoader'
-import { EstimateRouteMap } from '@/components/maps/EstimateRouteMap'
+import EstimateDetail from '@/components/common/EstimateDetail/EstimateDetail'
+import BitRightDialog from '@/components/common/BitRightDialog'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import BidRankingList from '@/components/common/BidRankingList'
 
 interface EstimateDetailPageProps {
 	params: Promise<{
@@ -29,10 +38,7 @@ export default async function EstimateDetailPage({
 		// Server Actionを使用してデータを取得
 		const estimateResponse = await getEstimateDetail(id)
 		const estimate = estimateResponse.data
-
-		// デバッグ用ログ
-		console.log('Estimate data:', estimate)
-		console.log('Luggage items:', estimate?.luggage_items)
+		console.log(estimate)
 
 		if (!estimate) {
 			return (
@@ -77,292 +83,66 @@ export default async function EstimateDetailPage({
 									一覧に戻る
 								</Link>
 							</div>
-
-							{/* 引越し経路マップ */}
-							<div className='mb-6'>
-								<GoogleMapsLoader>
-									<EstimateRouteMap
-										fromAddress={{
-											zipcode: estimate.moving_from.zipcode,
-											prefecture: estimate.moving_from.prefecture,
-											street_address: estimate.moving_from.street_address,
-											building_details: estimate.moving_from.building_details,
-											latitude: estimate.moving_from.latitude,
-											longitude: estimate.moving_from.longitude,
-										}}
-										toAddress={{
-											zipcode: estimate.moving_to.zipcode,
-											prefecture: estimate.moving_to.prefecture,
-											street_address: estimate.moving_to.street_address,
-											building_details: estimate.moving_to.building_details,
-											latitude: estimate.moving_to.latitude,
-											longitude: estimate.moving_to.longitude,
-										}}
-										straightDistance={estimate.straight_distance_km}
-									/>
-								</GoogleMapsLoader>
-							</div>
-
-							<div className='bg-white rounded-lg shadow-lg overflow-hidden'>
-								{/* 引越し元住所セクション */}
-								<div className='border-b border-gray-200 p-6'>
-									<h2 className='text-xl font-bold text-[#003672] mb-4'>
-										引越し元住所
-									</h2>
-
-									<div className='space-y-4'>
-										<div>
-											<h3 className='text-sm font-medium text-[#003672] mb-2'>
-												住所情報
-											</h3>
-											<div className='space-y-2'>
-												<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-													〒{estimate.moving_from.zipcode}
-												</p>
-												<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-													{estimate.moving_from.prefecture}{' '}
-													{estimate.moving_from.city}
-												</p>
-												<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-													{estimate.moving_from.street_address}
-												</p>
-												{estimate.moving_from.building_details && (
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{estimate.moving_from.building_details}
-													</p>
-												)}
-											</div>
-										</div>
-
-										<div>
-											<h3 className='text-sm font-medium text-[#003672] mb-2'>
-												建物情報
-											</h3>
-											<div className='grid md:grid-cols-2 gap-4'>
-												<div>
-													<label className='block text-xs font-medium text-gray-600 mb-1'>
-														建物のタイプ
-													</label>
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{estimate.moving_from.building_type}
-													</p>
+							{!estimate.has_bid_right && (
+								<BitRightDialog estimateId={estimate.id} />
+							)}
+							{estimate.has_bid_right && (
+								<Card className='my-6 bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200 shadow-lg hover:shadow-xl transition-all duration-300'>
+									<CardHeader className='pb-4'>
+										<div className='flex items-center justify-between'>
+											<div className='flex items-center space-x-3'>
+												<div className='flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-full'>
+													<CheckCircle className='h-6 w-6 text-emerald-600' />
 												</div>
 												<div>
-													<label className='block text-xs font-medium text-gray-600 mb-1'>
-														間取り
-													</label>
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{estimate.moving_from.floor_plan}
-													</p>
-												</div>
-												<div>
-													<label className='block text-xs font-medium text-gray-600 mb-1'>
-														お住まいの階数
-													</label>
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{estimate.moving_from.floor_number}
-													</p>
-												</div>
-												<div>
-													<label className='block text-xs font-medium text-gray-600 mb-1'>
-														エレベーター
-													</label>
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{estimate.moving_from.has_elevator}
+													<CardTitle className='text-emerald-800 text-xl font-semibold flex items-center gap-2'>
+														入札権取得済み
+														<Sparkles className='h-5 w-5 text-emerald-600' />
+													</CardTitle>
+													<p className='text-emerald-600 text-sm mt-1'>
+														この見積もりへの入札が可能です
 													</p>
 												</div>
 											</div>
 										</div>
-									</div>
-								</div>
-
-								{/* 引越し先住所セクション */}
-								<div className='border-b border-gray-200 p-6'>
-									<h2 className='text-xl font-bold text-[#003672] mb-4'>
-										引越し先住所
-									</h2>
-
-									<div className='space-y-4'>
-										<div>
-											<h3 className='text-sm font-medium text-[#003672] mb-2'>
-												住所情報
-											</h3>
-											<div className='space-y-2'>
-												<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-													〒{estimate.moving_to.zipcode}
-												</p>
-												<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-													{estimate.moving_to.prefecture}{' '}
-													{estimate.moving_to.city}
-												</p>
-												<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-													{estimate.moving_to.street_address}
-												</p>
-												{estimate.moving_to.building_details && (
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{estimate.moving_to.building_details}
+									</CardHeader>
+									<CardContent className='pt-0'>
+										<div className='bg-white/70 rounded-lg p-4 border border-emerald-100'>
+											<div className='flex items-center justify-between'>
+												<div>
+													<h4 className='font-medium text-gray-900 mb-1'>
+														入札を開始しましょう
+													</h4>
+													<p className='text-sm text-gray-600'>
+														競合他社よりも魅力的な提案で営業権を獲得しましょう
 													</p>
-												)}
+												</div>
+												<Button
+													asChild
+													size='lg'
+													className='bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2'
+												>
+													<a
+														href={`/store/estimates/${estimate.id}/bid`}
+														target='_blank'
+														rel='noopener noreferrer'
+													>
+														入札する
+														<ExternalLink className='h-4 w-4' />
+													</a>
+												</Button>
 											</div>
 										</div>
+									</CardContent>
+								</Card>
+							)}
+							<EstimateDetail estimate={estimate} />
+							<Separator />
 
-										<div>
-											<h3 className='text-sm font-medium text-[#003672] mb-2'>
-												建物情報
-											</h3>
-											<div className='grid md:grid-cols-2 gap-4'>
-												<div>
-													<label className='block text-xs font-medium text-gray-600 mb-1'>
-														建物のタイプ
-													</label>
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{estimate.moving_to.building_type}
-													</p>
-												</div>
-												<div>
-													<label className='block text-xs font-medium text-gray-600 mb-1'>
-														間取り
-													</label>
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{estimate.moving_to.floor_plan}
-													</p>
-												</div>
-												<div>
-													<label className='block text-xs font-medium text-gray-600 mb-1'>
-														お住まいの階数
-													</label>
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{estimate.moving_to.floor_number}
-													</p>
-												</div>
-												<div>
-													<label className='block text-xs font-medium text-gray-600 mb-1'>
-														エレベーター
-													</label>
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{estimate.moving_to.has_elevator}
-													</p>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-
-								{/* 人数・日程・時間セクション */}
-								<div className='border-b border-gray-200 p-6'>
-									<h2 className='text-xl font-bold text-[#003672] mb-4'>
-										人数・日程・時間
-									</h2>
-
-									<div className='space-y-4'>
-										<div>
-											<h3 className='text-sm font-medium text-[#003672] mb-2'>
-												引越し人数
-											</h3>
-											<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-												{formatPeopleCount(estimate.people_count)}
-											</p>
-										</div>
-
-										<div>
-											<h3 className='text-sm font-medium text-[#003672] mb-2'>
-												引越し日
-											</h3>
-											<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-												{formatMovingDate(estimate)}
-											</p>
-										</div>
-
-										<div>
-											<h3 className='text-sm font-medium text-[#003672] mb-2'>
-												作業開始時間
-											</h3>
-											<p className='text-gray-700 bg-gray-50 p-3 rounded-md mb-2'>
-												{estimate.work_start_time_type === 'anytime'
-													? 'いつでも'
-													: '指定する'}
-											</p>
-											{estimate.work_start_time_type === 'specific' && (
-												<div>
-													<label className='block text-xs font-medium text-gray-600 mb-1'>
-														時間帯
-													</label>
-													<p className='text-gray-700 bg-gray-50 p-3 rounded-md'>
-														{formatWorkStartTime(estimate)}
-													</p>
-												</div>
-											)}
-										</div>
-									</div>
-								</div>
-
-								{/* お荷物量セクション */}
-								<div className='border-b border-gray-200 p-6'>
-									<h2 className='text-xl font-bold text-[#003672] mb-4'>
-										お荷物量
-									</h2>
-
-									{estimate.luggage_items &&
-									estimate.luggage_items.length > 0 ? (
-										<div className='space-y-6'>
-											{/* カテゴリー別にグループ化 */}
-											{Object.entries(
-												estimate.luggage_items.reduce(
-													(acc: { [key: string]: any[] }, item) => {
-														const category = item.luggage?.category || 'その他'
-														if (!acc[category]) acc[category] = []
-														acc[category].push(item)
-														return acc
-													},
-													{}
-												)
-											).map(([category, items]) => (
-												<div key={category} className='space-y-4'>
-													<h3 className='text-lg font-semibold text-[#003672] border-b border-gray-200 pb-2'>
-														{category}
-													</h3>
-													<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-														{items.map((item) => (
-															<div
-																key={item.id}
-																className='border border-gray-200 rounded-lg p-4'
-															>
-																<div className='flex items-start justify-between gap-3'>
-																	<div className='flex-1 min-w-0'>
-																		<h4 className='font-medium text-gray-900 break-words'>
-																			{item.luggage?.name || '不明な荷物'}
-																		</h4>
-																	</div>
-																	<div className='bg-[#003672] text-white px-3 py-1 rounded-full text-sm font-medium flex-shrink-0'>
-																		数量 : {item.quantity}
-																	</div>
-																</div>
-															</div>
-														))}
-													</div>
-												</div>
-											))}
-										</div>
-									) : (
-										<p className='text-gray-500 text-center py-8'>
-											選択された荷物はありません
-										</p>
-									)}
-
-									{estimate.other_luggage && (
-										<div className='mt-6 pt-6 border-t border-gray-200'>
-											<h3 className='text-lg font-semibold text-[#003672] mb-4'>
-												上記以外の家財
-											</h3>
-											<div className='bg-gray-50 p-4 rounded-lg'>
-												<p className='text-gray-700 whitespace-pre-wrap'>
-													{estimate.other_luggage}
-												</p>
-											</div>
-										</div>
-									)}
-								</div>
-							</div>
+							{estimate.bid_ranking_list &&
+								estimate.bid_ranking_list.length > 0 && (
+									<BidRankingList estimate={estimate} />
+								)}
 						</div>
 					</main>
 				</div>

@@ -1,6 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
+import { Estimate } from '@/types/estimate'
 
 export interface EstimateListItem {
 	id: string
@@ -50,9 +51,15 @@ export interface EstimatesListResponse {
 	}
 }
 
+export interface EstimateFilters {
+	to_prefecture_codes?: number[]
+	from_prefecture_codes?: number[]
+}
+
 export async function getEstimatesList(
 	page: number = 1,
-	perPage: number = 20
+	perPage: number = 20,
+	filters?: EstimateFilters
 ): Promise<EstimatesListResponse> {
 	const cookieStore = await cookies()
 	const token = cookieStore.get('store_token')?.value
@@ -61,8 +68,31 @@ export async function getEstimatesList(
 		throw new Error('認証トークンが見つかりません。ログインしてください。')
 	}
 
+	// クエリパラメータを構築
+	const searchParams = new URLSearchParams()
+	searchParams.append('page', page.toString())
+	searchParams.append('per_page', perPage.toString())
+
+	// フィルタ条件を追加（都道府県のみ、ハイフン区切りで送信）
+	if (filters?.to_prefecture_codes?.length) {
+		const validCodes = filters.to_prefecture_codes.filter(
+			(code) => Number.isInteger(code) && code > 0
+		)
+		if (validCodes.length > 0) {
+			searchParams.append('to_prefecture_code', validCodes.join('-'))
+		}
+	}
+	if (filters?.from_prefecture_codes?.length) {
+		const validCodes = filters.from_prefecture_codes.filter(
+			(code) => Number.isInteger(code) && code > 0
+		)
+		if (validCodes.length > 0) {
+			searchParams.append('from_prefecture_code', validCodes.join('-'))
+		}
+	}
+
 	const response = await fetch(
-		`${process.env.API_BASE_URL}/api/estimate?page=${page}&per_page=${perPage}`,
+		`${process.env.API_BASE_URL}/api/estimate?${searchParams.toString()}`,
 		{
 			method: 'GET',
 			headers: {
@@ -85,75 +115,20 @@ export async function getEstimatesList(
 	return result
 }
 
-export interface EstimateDetailData {
-	id: string
-	name: string
-	name_furigana: string
-	phone: string
-	email: string
-	moving_from: {
-		zipcode: string
-		prefecture: string
-		city: string
-		street_address: string
-		building_details: string
-		building_type: string
-		room_layout: string
-		floor: string
-		elevator: string
-		latitude: number
-		longitude: number
-		floor_plan: string
-		floor_number: string
-		has_elevator: boolean
-	}
-	moving_to: {
-		zipcode: string
-		prefecture: string
-		city: string
-		street_address: string
-		building_details: string
-		building_type: string
-		room_layout: string
-		floor: string
-		elevator: string
-		latitude: number
-		longitude: number
-		floor_plan: string
-		floor_number: string
-		has_elevator: boolean
-	}
-	moving_date_type: string
-	moving_date: string
-	moving_specific_date?: string
-	moving_year_month?: string
-	moving_period?: string
-	people_count: number
-	work_start_time_type: string
-	work_start_time?: string
-	other_luggage?: string
-	luggage_items: Array<{
-		id: string
-		quantity: number
-		luggage: {
-			id: string
-			name: string
-			sub_label?: string
-			category: {
-				id: string
-				name: string
-			}
-		}
-	}>
-	status: string
-	straight_distance_km: number | null
-	created_at: string
-	updated_at: string
-}
-
 export interface EstimateDetailResponse {
 	success: boolean
-	data: EstimateDetailData
+	data: EstimateWithBidRanking
+}
+export interface EstimateWithBidRanking extends Estimate {
+	bid_ranking_list: {
+		is_tie: boolean
+		max: number
+		min: number
+		rank: number
+		store_id: string
+		store_name: string
+		tie_count: number
+	}[]
 }
 
 export async function getEstimateDetail(

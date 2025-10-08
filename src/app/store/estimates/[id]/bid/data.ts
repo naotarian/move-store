@@ -1,5 +1,6 @@
 import { getCurrentStoreId } from '@/lib/auth'
 import apiClient from '@/lib/api-client'
+import type { EstimateDetailResponse } from '@/lib/actions/estimates'
 
 // 見積もり詳細データの型定義
 export interface EstimateDetail {
@@ -57,9 +58,9 @@ export interface BidData {
  */
 export async function getEstimateDetail(
 	estimateId: string
-): Promise<{ data: EstimateDetail | null }> {
+): Promise<{ data: EstimateDetailResponse | null }> {
 	try {
-		const result = await apiClient.getJson<{ data: EstimateDetail }>(
+		const result = await apiClient.getJson<{ data: EstimateDetailResponse }>(
 			`/api/estimate/${estimateId}`
 		)
 		return { data: result.data }

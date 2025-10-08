@@ -1,6 +1,14 @@
 import { cookies } from 'next/headers'
 
 /**
+ * APIエラー型
+ */
+interface ApiError extends Error {
+	status?: number
+	response?: { data: unknown }
+}
+
+/**
  * 認証情報付きAPIクライアント
  */
 export class AuthenticatedApiClient {
@@ -80,7 +88,7 @@ export class AuthenticatedApiClient {
 				const errorData = await response.json().catch(() => ({}))
 				const error = new Error(
 					`403 Forbidden: アクセスが拒否されました`
-				) as any
+				) as ApiError
 				error.status = 403
 				error.response = { data: errorData }
 				throw error
@@ -92,9 +100,12 @@ export class AuthenticatedApiClient {
 			}
 
 			// その他のエラー
-			throw new Error(
+			// ステータスコードもエラーに含める
+			const error = new Error(
 				`API request failed: ${response.status} ${response.statusText}`
-			)
+			) as ApiError
+			error.status = response.status
+			throw error
 		}
 
 		return response
@@ -115,7 +126,7 @@ export class AuthenticatedApiClient {
 	 */
 	async post(
 		endpoint: string,
-		data?: any,
+		data?: unknown,
 		options?: RequestInit
 	): Promise<Response> {
 		return this.authenticatedFetch(endpoint, {
@@ -130,7 +141,7 @@ export class AuthenticatedApiClient {
 	 */
 	async put(
 		endpoint: string,
-		data?: any,
+		data?: unknown,
 		options?: RequestInit
 	): Promise<Response> {
 		return this.authenticatedFetch(endpoint, {
@@ -145,7 +156,7 @@ export class AuthenticatedApiClient {
 	 */
 	async patch(
 		endpoint: string,
-		data?: any,
+		data?: unknown,
 		options?: RequestInit
 	): Promise<Response> {
 		return this.authenticatedFetch(endpoint, {
@@ -168,7 +179,10 @@ export class AuthenticatedApiClient {
 	/**
 	 * レスポンスをJSONとして取得
 	 */
-	async getJson<T = any>(endpoint: string, options?: RequestInit): Promise<T> {
+	async getJson<T = unknown>(
+		endpoint: string,
+		options?: RequestInit
+	): Promise<T> {
 		const response = await this.get(endpoint, options)
 		return response.json()
 	}
@@ -176,9 +190,9 @@ export class AuthenticatedApiClient {
 	/**
 	 * POSTリクエストでJSONレスポンスを取得
 	 */
-	async postJson<T = any>(
+	async postJson<T = unknown>(
 		endpoint: string,
-		data?: any,
+		data?: unknown,
 		options?: RequestInit
 	): Promise<T> {
 		const response = await this.post(endpoint, data, options)
@@ -188,9 +202,9 @@ export class AuthenticatedApiClient {
 	/**
 	 * PUTリクエストでJSONレスポンスを取得
 	 */
-	async putJson<T = any>(
+	async putJson<T = unknown>(
 		endpoint: string,
-		data?: any,
+		data?: unknown,
 		options?: RequestInit
 	): Promise<T> {
 		const response = await this.put(endpoint, data, options)
@@ -200,13 +214,38 @@ export class AuthenticatedApiClient {
 	/**
 	 * PATCHリクエストでJSONレスポンスを取得
 	 */
-	async patchJson<T = any>(
+	async patchJson<T = unknown>(
 		endpoint: string,
-		data?: any,
+		data?: unknown,
 		options?: RequestInit
 	): Promise<T> {
 		const response = await this.patch(endpoint, data, options)
 		return response.json()
+	}
+
+	/**
+	 * POSTリクエストでJSONレスポンスとステータスコードを取得
+	 */
+	async postJsonWithStatus<T = unknown>(
+		endpoint: string,
+		data?: unknown,
+		options?: RequestInit
+	): Promise<{ data: T; status: number }> {
+		try {
+			const response = await this.post(endpoint, data, options)
+			const jsonData = await response.json()
+			return {
+				data: jsonData,
+				status: response.status,
+			}
+		} catch (error: unknown) {
+			// エラーの場合もステータスコードを含めて返す
+			const apiError = error as ApiError
+			throw {
+				...apiError,
+				status: apiError.status || 500,
+			}
+		}
 	}
 }
 

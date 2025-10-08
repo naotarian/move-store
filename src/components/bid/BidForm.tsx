@@ -26,7 +26,6 @@ const BidForm: React.FC<BidFormProps> = ({
 	successMessage,
 	errorMessage,
 }) => {
-	console.log(bidRightData)
 	// 入札権データが存在しない、または入札権がない場合
 	if (bidRightData && !bidRightData?.hasBidRight) {
 		return (

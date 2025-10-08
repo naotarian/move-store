@@ -27,14 +27,6 @@ export async function submitBid(formData: FormData) {
 		const maxPrice = Number(formData.get('maxPrice'))
 		const message = formData.get('message') as string
 
-		// バリデーション
-		console.log('=== Validation Check ===')
-		console.log('Estimate ID:', estimateId)
-		console.log('Min Price:', minPrice)
-		console.log('Max Price:', maxPrice)
-		console.log('Message:', message)
-		console.log('Store ID:', storeId)
-
 		if (!estimateId) {
 			console.error('Validation Error: 見積もりIDが必要です')
 			throw new Error('見積もりIDが必要です')
@@ -58,9 +50,6 @@ export async function submitBid(formData: FormData) {
 			throw new Error('最低価格は最高価格以下で入力してください')
 		}
 
-		console.log('Validation passed ✅')
-		console.log('========================')
-
 		// 入札データを構築
 		const bidData: BidData = {
 			estimateId,
@@ -70,13 +59,6 @@ export async function submitBid(formData: FormData) {
 			message: message || undefined,
 		}
 
-		// 送信前のログ
-		console.log('=== Submit Bid Request ===')
-		console.log('Bid Data:', bidData)
-		console.log('Timestamp:', new Date().toISOString())
-		console.log('Store ID:', storeId)
-		console.log('Estimate ID:', estimateId)
-
 		// API呼び出しを実行
 		const result = await apiClient.postJson<{ data: any }>(
 			`/api/store/estimates/${estimateId}/bids`,
@@ -84,9 +66,6 @@ export async function submitBid(formData: FormData) {
 		)
 
 		// 成功時の処理
-		console.log('=== Submit Bid Success ===')
-		console.log('Bid submitted successfully:', result)
-		console.log('============================')
 
 		// データの再検証
 		revalidatePath(`/store/estimates/${estimateId}/bid`)
